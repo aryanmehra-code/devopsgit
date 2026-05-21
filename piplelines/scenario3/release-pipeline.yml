@@ -10,7 +10,7 @@ steps:
   inputs:
     buildType: 'specific'
     project: 'devops-assignment'
-    definition: '12'
+    definition: '2'
     buildVersionToDownload: 'latest'
     downloadType: 'single'
     artifactName: 'drop'
