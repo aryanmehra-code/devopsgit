@@ -24,7 +24,7 @@ steps:
     provider: 'azurerm'
     command: 'init'
     workingDirectory: 'terraform'
-    backendServiceArm: 'AzureConnection'
+    backendServiceArm: 'azure-sub1'
     backendAzureRmResourceGroupName: 'devop-backend'
     backendAzureRmStorageAccountName: 'devopstorage001'
     backendAzureRmContainerName: 'blobdevops'
