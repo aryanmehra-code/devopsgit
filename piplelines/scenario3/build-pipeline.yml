@@ -6,19 +6,12 @@ pool:
 
 steps:
 
-# Show files for debugging
-
-- script: |
-    pwd
-    ls -R
-  displayName: Show Repository Files
-
-# Archive Files
+# Archive Website Files
 
 - task: ArchiveFiles@2
   displayName: Archive Website Files
   inputs:
-    rootFolderOrFile: '.'
+    rootFolderOrFile: 'Socksify-Project'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/socksify.zip'

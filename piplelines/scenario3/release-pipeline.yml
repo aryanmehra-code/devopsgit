@@ -6,7 +6,7 @@ pool:
 resources:
   pipelines:
     - pipeline: buildPipeline
-      source: build-pipeline
+      source: aryanmehra-code.devopsgit
       trigger: true
 
 steps:
