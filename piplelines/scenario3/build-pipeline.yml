@@ -11,16 +11,20 @@ steps:
 - task: ArchiveFiles@2
   displayName: Archive Website Files
   inputs:
-    rootFolderOrFile: 'Socksify-Project'
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/socksify.zip'
     replaceExistingArchive: true
 
+# Debug Scripting
+- script: |
+    ls -la $(Build.ArtifactStagingDirectory)
 # Publish Artifact
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Build Artifact
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/socksify.zip'
     ArtifactName: 'drop'
+

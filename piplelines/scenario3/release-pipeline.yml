@@ -20,7 +20,8 @@ steps:
     downloadType: 'single'
     artifactName: 'drop'
     downloadPath: '$(System.ArtifactsDirectory)'
-
+- script: |
+    ls -la $(System.ArtifactsDirectory)
 # Deploy to Function App
 
 - task: AzureFunctionApp@1
