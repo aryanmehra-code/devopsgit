@@ -1,0 +1,32 @@
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+
+resources:
+  pipelines:
+    - pipeline: buildPipeline
+      source: build-pipeline
+      trigger: true
+
+steps:
+
+# Download Artifact
+
+- task: DownloadBuildArtifacts@0
+  displayName: Download Build Artifact
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'drop'
+    downloadPath: '$(System.ArtifactsDirectory)'
+
+# Deploy to Function App
+
+- task: AzureFunctionApp@1
+  displayName: Deploy to Azure Function App
+  inputs:
+    azureSubscription: 'azure-sub1'
+    appType: 'functionAppLinux'
+    appName: 'lngfunctionapp123'
+    package: '$(System.ArtifactsDirectory)/drop/socksify.zip'
