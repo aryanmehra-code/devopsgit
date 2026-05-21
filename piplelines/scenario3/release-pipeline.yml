@@ -4,7 +4,7 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-
+   
 - task: DownloadBuildArtifacts@0
   displayName: Download Build Artifact
   inputs:
@@ -23,3 +23,4 @@ steps:
     appType: 'functionAppLinux'
     appName: 'lngfunctionapp123'
     package: '$(System.ArtifactsDirectory)/drop/socksify.zip'
+    // For Linux Function App, specify the runtime 
