@@ -3,25 +3,22 @@ trigger: none
 pool:
   vmImage: ubuntu-latest
 
-resources:
-  pipelines:
-    - pipeline: buildPipeline
-      source: aryanmehra-code.devopsgit
-      trigger: true
-
 steps:
 
-# Download Artifact
+# Download Latest Build Artifact
 
 - task: DownloadBuildArtifacts@0
   displayName: Download Build Artifact
   inputs:
-    buildType: 'current'
+    buildType: 'specific'
+    project: 'devops-assignment'
+    pipeline: 'aryanmehra-code.devopsgit'
+    buildVersionToDownload: 'latest'
     downloadType: 'single'
     artifactName: 'drop'
     downloadPath: '$(System.ArtifactsDirectory)'
 
-# Deploy to Function App
+# Deploy to Azure Function App
 
 - task: AzureFunctionApp@1
   displayName: Deploy to Azure Function App
