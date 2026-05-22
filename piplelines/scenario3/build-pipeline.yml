@@ -4,8 +4,8 @@ trigger:
     - develop
   paths:
     exclude:
-    - pipelines/scenario1/*
-    
+    - piplelines/scenario1/*
+
 pool:
   vmImage: ubuntu-latest
 
