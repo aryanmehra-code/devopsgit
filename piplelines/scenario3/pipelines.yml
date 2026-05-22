@@ -1,5 +1,11 @@
 trigger:
-- develop
+  branches:
+    include:
+    - develop
+  paths:
+    exclude:
+    - pipelines/scenario1/* 
+    
 
 pool:
   vmImage: ubuntu-latest

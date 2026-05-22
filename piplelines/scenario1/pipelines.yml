@@ -1,0 +1,154 @@
+trigger: none # Kept manual for your complete control!
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  terraformVersion: '1.5.7'
+
+stages:
+
+# ==========================================
+# STAGE 1: INFRASTRUCTURE (TERRAFORM)
+# ==========================================
+- stage: Infrastructure
+  displayName: '1. Deploy Azure Infrastructure'
+  jobs:
+  - job: Terraform_Apply
+    displayName: 'Run Terraform Init, Plan, Apply'
+    steps:
+    - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: $(terraformVersion)
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: 'terraform'
+        backendServiceArm: 'azure-sub1'
+        backendAzureRmResourceGroupName: 'devop-backend'
+        backendAzureRmStorageAccountName: 'devopstorage001'
+        backendAzureRmContainerName: 'blobdevops'
+        backendAzureRmKey: 'scenario1.tfstate' # Dedicated state key for Scenario 1
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Plan'
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: 'terraform'
+        environmentServiceNameAzureRM: 'azure-sub1'
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Apply'
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: 'terraform'
+        environmentServiceNameAzureRM: 'azure-sub1'
+        commandOptions: '-auto-approve'
+
+# ==========================================
+# STAGE 2: BUILD (PACKAGE APPLICATION)
+# ==========================================
+- stage: Build
+  displayName: '2. Build and Package App'
+  dependsOn: Infrastructure
+  jobs:
+  - job: Archive_And_Publish
+    displayName: 'Zip Website Files'
+    steps:
+    - task: ArchiveFiles@2
+      displayName: 'Archive Website Files'
+      inputs:
+        rootFolderOrFile: 'Socksify-Project'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/socksify.zip'
+        replaceExistingArchive: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Build Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+
+# ==========================================
+# STAGE 3: RELEASE (DEPLOY TO FUNCTION APP)
+# ==========================================
+- stage: Release
+  displayName: '3. Deploy to Azure'
+  dependsOn: Build
+  jobs:
+  - job: Deploy_To_Azure
+    displayName: 'Deploy Package to Function App'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Build Artifact'
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(System.ArtifactsDirectory)'
+
+    - task: AzureFunctionApp@1
+      displayName: 'Deploy to Azure Function App'
+      inputs:
+        azureSubscription: 'azure-sub1'
+        appType: 'functionAppLinux'
+        appName: 'lngfunctionapp123'
+        package: '$(System.ArtifactsDirectory)/drop/socksify.zip'
+
+# ==========================================
+# STAGE 4: CLEANUP (TERRAFORM DESTROY)
+# ==========================================
+- stage: Cleanup
+  displayName: '4. Clean & Destroy Infrastructure'
+  dependsOn: Release
+  jobs:
+  - job: WaitForApproval
+    displayName: 'Hold for Manual Confirmation'
+    pool: server # Runs on Azure DevOps cloud instead of an agent pool to wait for you
+    steps:
+    - task: ManualValidation@0
+      displayName: 'Pause for Mentor Review'
+      inputs:
+        notifyUsers: |
+          admin@example.com
+        instructions: 'Click Approve to trigger Terraform Destroy and wipe out the Azure resources for Scenario 1.'
+        onTimeout: 'resume' # If you walk away, it will safely close out
+
+  - job: Terraform_Destroy
+    displayName: 'Execute Terraform Destroy'
+    dependsOn: WaitForApproval
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: $(terraformVersion)
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Init'
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: 'terraform'
+        backendServiceArm: 'azure-sub1'
+        backendAzureRmResourceGroupName: 'devop-backend'
+        backendAzureRmStorageAccountName: 'devopstorage001'
+        backendAzureRmContainerName: 'blobdevops'
+        backendAzureRmKey: 'scenario1.tfstate' # Must target the exact same state file to destroy it!
+
+    - task: TerraformTaskV4@4
+      displayName: 'Terraform Destroy'
+      inputs:
+        provider: 'azurerm'
+        command: 'destroy'
+        workingDirectory: 'terraform'
+        environmentServiceNameAzureRM: 'azure-sub1'
+        commandOptions: '-auto-approve'
