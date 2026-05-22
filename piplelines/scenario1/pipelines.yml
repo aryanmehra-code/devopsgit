@@ -32,7 +32,7 @@ stages:
         backendAzureRmResourceGroupName: 'devop-backend'
         backendAzureRmStorageAccountName: 'devopstorage001'
         backendAzureRmContainerName: 'blobdevops'
-        backendAzureRmKey: 'scenario1.tfstate' # Dedicated state key for Scenario 1
+        backendAzureRmKey: 'terraform.tfstate' # Dedicated state key for Scenario 1
 
     - task: TerraformTaskV4@4
       displayName: 'Terraform Plan'
@@ -142,7 +142,7 @@ stages:
         backendAzureRmResourceGroupName: 'devop-backend'
         backendAzureRmStorageAccountName: 'devopstorage001'
         backendAzureRmContainerName: 'blobdevops'
-        backendAzureRmKey: 'scenario1.tfstate' # Must target the exact same state file to destroy it!
+        backendAzureRmKey: 'terraform.tfstate' # Must target the exact same state file to destroy it!
 
     - task: TerraformTaskV4@4
       displayName: 'Terraform Destroy'
